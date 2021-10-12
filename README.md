@@ -18,7 +18,7 @@
     <img src="https://img.shields.io/badge/vers%C3%A3o-0.0.1-green" alt="Versão" />
   </a>
   <a href="https://github.com/randler/buzzvel-weekend-api/releases">
-    <img src="https://img.shields.io/packagist/dt/randler/adiq-php.svg" alt="Downloads" />
+    <img src="https://img.shields.io/packagist/dt/randler/weekbuzz-php.svg" alt="Downloads" />
   </a>
 </p>
 
