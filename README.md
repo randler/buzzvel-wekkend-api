@@ -36,7 +36,7 @@
 
 To install the the lib just enter the next command:
 
-`composer require randler/buzzvel-weekend-api`
+`composer require randler/weekbuzz-php`
 <br>
 <br>
 <hr>
