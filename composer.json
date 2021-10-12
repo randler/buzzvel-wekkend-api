@@ -1,7 +1,7 @@
 {
     "name": "randler/buzzvel-wekkend-api",
     "description": "Weekend Buzzvel PHP Library",
-    "type": "lib",
+    "type": "library",
     "keywords": [
       "buzzvel",
       "weekend",
