@@ -36,8 +36,11 @@ class Search
      * @return ArrayObject of Hotels
      * 
      */
-    public static function getNearbyHotels( $latitude, $longitude, $orderBy = 'proximity' )
+    public static function getNearbyHotels( $latitude, $longitude, $orderBy = "proximity" )
     {
+
+        $orderBy = isset($orderBy) && !empty($orderBy) ? $orderBy : "proximity";
+
         $client = new HttpClient();
         $response = $client->request(self::GET, self::URI_HOTELS);
         $hotels = json_decode($response->getBody());
