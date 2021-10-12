@@ -149,5 +149,66 @@ class Search
         return $this->hotels;
     }
 
-    
+    public static function getNearbyHotels( $latitude, $longitude, $orderby = 'proximity' )
+    {
+        //“proximity” or “pricepernight”
+        $url = 'https://buzzvel-interviews.s3.eu-west-1.amazonaws.com/hotels.json';
+        $client = new HttpClient();
+        $response = $client->request('GET', $url);
+        $hotels = json_decode($response->getBody());
+        $hotels = $hotels->message;
+
+
+        if( $orderby == 'proximity' ) {
+        // sort array by distance
+            usort($hotels, function($a, $b) use ($latitude, $longitude) {
+                $a = self::distance($latitude, $longitude, $a[1], $a[2]);
+                $b = self::distance($latitude, $longitude, $b[1], $b[2]);
+                if ($a == $b) {
+                    return 0;
+                }
+                return ($a < $b) ? -1 : 1;
+            });
+        } else if( $orderby == 'pricepernight' ) {
+            // sort array by price per night
+            usort($hotels, function($a, $b) {
+                if ($a[3] == $b[3]) {
+                    return 0;
+                }
+                return ($a[3] < $b[3]) ? -1 : 1;
+            });
+        }
+
+        return $hotels;
+
+    }
+
+    public static function distance(
+        $lat1, 
+        $lon1, 
+        $lat2, 
+        $lon2, 
+        $unit = "km"
+    ) 
+    {    
+        $lat1 = floatval($lat1); 
+        $lon1 = floatval($lon1); 
+        $lat2 = floatval($lat2); 
+        $lon2 = floatval($lon2);
+
+        $theta = $lon1 - $lon2;
+        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+        $dist = acos($dist);
+        $dist = rad2deg($dist);
+        $miles = $dist * 60 * 1.1515;
+        $unit = strtoupper($unit);
+
+        if ($unit == "KM") {
+            return number_format(($miles * 1.609344), 2, '.', '') . " KM";
+        } else if ($unit == "M") {
+            return number_format(($miles * 0.8684), 2) . " M";
+        } else {
+            return number_format($miles, 2);
+        }
+    }
 }

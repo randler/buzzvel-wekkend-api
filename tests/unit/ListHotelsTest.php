@@ -13,10 +13,13 @@ class ListHotelsTest extends TestCase
 {
     public function testRequestAuth()
     {        
-        $search = new Search();
+        $my_lat = "-34.596111224556964";
+        $my_lng = "-58.51730236052004";
+
+        $hotels = Search::getNearbyHotels($my_lat, $my_lng, "'pricepernight'");
         
         // Requisição de token funcionando
-        $hotels = $search->hotels()->list();
+        //$hotels = $search->hotels()->list();
 
         fwrite(STDERR, print_r($hotels));
         
