@@ -2,6 +2,7 @@
 
 namespace WeekBuzz;
 
+use Exception;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\ClientException as ClientException;
 use WeekBuzz\Endpoints\Hotels;
@@ -13,153 +14,42 @@ class Search
      * @var string
      */
     const BASE_URI = 'https://buzzvel-interviews.s3.eu-west-1.amazonaws.com/';
-
-    /**
-     * @var string header used to identify application's requests
-     */
-    const DELIVERY_USER_AGENT_HEADER = 'X-WeekBuzz-User-Agent';
-
-    /**
-     * @var \GuzzleHttp\Client
-     */
-    private $http;
-
-    /**
-     * @var \WeekBuzz\Endpoints\Payment
-     */
-    private $hotels;
     
     /**
-     * @param string $apiKey
-     * @param array|null $extras
-     * @param boolean|false $test
+     * @var string
      */
-    public function __construct(array $extras = null)
-    {
-            $base_url = self::BASE_URI;
-
-        $options = ['base_uri' => $base_url];
-
-        if (!is_null($extras)) {
-            $options = array_merge($options, $extras);
-        }
-
-        $userAgent = isset($options['headers']['User-Agent']) ?
-            $options['headers']['User-Agent'] :
-            '';
-        $authorization = isset($extras['Authorization']) ?
-            $extras['Authorization'] :
-            '';
-
-        $options['headers'] = $this->addUserAgentHeaders($userAgent, $authorization);
-
-        $this->http = new HttpClient($options);
-
-        $this->hotels = new Hotels($this);
-    }
+    const URI_HOTELS = self::BASE_URI . "hotels.json";
 
     /**
-     * @param string $method
-     * @param string $uri
-     * @param array $options
-     *
-     * @throws \WeekBuzz\Exceptions\WeekBuzzException
-     * @return \ArrayObject
-     *
-     * @psalm-suppress InvalidNullableReturnType
+     * @var string
      */
-    public function request($method, $uri, $options = [], $header = [])
-    {
-        try {
-
-            $userAgent = isset($header['headers']['User-Agent']) ?
-                $header['headers']['User-Agent'] :
-                '';
-            if(isset($header) && !empty($header)) {
-                $base_url = self::BASE_URI;
-        
-                $options = array_merge($options, ['base_uri' => $base_url]);
-
-                $authorization = isset($header['Authorization']) ?
-                    $header['Authorization'] :
-                    '';
-
-                $options['headers'] = $this->addUserAgentHeaders($userAgent, $authorization);
-
-                $this->http = new HttpClient($options);
-            }
-            
-            $response = $this->http->request(
-                $method,
-                $uri,
-                $options
-            );
-
-            $body = ResponseHandler::success((string)$response->getBody());
-
-            return $body;
-        } catch (InvalidJsonException $exception) {
-            throw $exception;
-        } catch (ClientException $exception) {
-            ResponseHandler::failure($exception);
-        } catch (\Exception $exception) {
-            throw $exception;
-        }
-    }
+    const GET = 'GET';
 
     /**
-     * Build an user-agent string to be informed on requests
-     *
-     * @param string $customUserAgent
-     *
-     * @return string
+     * @author: Randler Ferraz Almeida
+     * @method: GET
+     * 
+     * @param $latitude
+     * @param $longitude
+     * @param $orderBy (proximity or pricepernight)
+     * 
+     * @return ArrayObject of Hotels
+     * 
      */
-    private function buildUserAgent($customUserAgent = '')
+    public static function getNearbyHotels( $latitude, $longitude, $orderBy = 'proximity' )
     {
-        return trim(sprintf(
-            '%s PHP/%s',
-            $customUserAgent,
-            phpversion()
-        ));
-    }
-
-    /**
-     * Append new keys (the default and delivery) related to user-agent
-     *
-     * @param string $customUserAgent
-     * @return array
-     */
-    private function addUserAgentHeaders($customUserAgent = '', $authorization = null)
-    {
-        return [
-            'User-Agent' => $this->buildUserAgent($customUserAgent),
-            'Content-Type' => "application/json",
-            'Authorization' => $authorization,
-            self::DELIVERY_USER_AGENT_HEADER => $this->buildUserAgent(
-                $customUserAgent
-            )
-        ];
-    }
-
-    /**
-     * @return \WeekBuzz\Endpoints\Payment
-     */
-    public function hotels()
-    {
-        return $this->hotels;
-    }
-
-    public static function getNearbyHotels( $latitude, $longitude, $orderby = 'proximity' )
-    {
-        //“proximity” or “pricepernight”
-        $url = 'https://buzzvel-interviews.s3.eu-west-1.amazonaws.com/hotels.json';
         $client = new HttpClient();
-        $response = $client->request('GET', $url);
+        $response = $client->request(self::GET, self::URI_HOTELS);
         $hotels = json_decode($response->getBody());
+        
+        if(!$hotels->success) {
+            throw new Exception("Oops Hotels not found!", 404);
+        }
+
         $hotels = $hotels->message;
 
 
-        if( $orderby == 'proximity' ) {
+        if( $orderBy == 'proximity' ) {
         // sort array by distance
             usort($hotels, function($a, $b) use ($latitude, $longitude) {
                 $a = self::distance($latitude, $longitude, $a[1], $a[2]);
@@ -169,7 +59,7 @@ class Search
                 }
                 return ($a < $b) ? -1 : 1;
             });
-        } else if( $orderby == 'pricepernight' ) {
+        } else if( $orderBy == 'pricepernight' ) {
             // sort array by price per night
             usort($hotels, function($a, $b) {
                 if ($a[3] == $b[3]) {
@@ -183,6 +73,7 @@ class Search
 
     }
 
+    // Calculate distance between two points in latitude and longitude in km's or miles
     public static function distance(
         $lat1, 
         $lon1, 
