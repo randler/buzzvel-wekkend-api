@@ -16,11 +16,9 @@ class ListHotelsTest extends TestCase
         $my_lat = "-34.596111224556964";
         $my_lng = "-58.51730236052004";
 
-        $hotels = Search::getNearbyHotels($my_lat, $my_lng, "'pricepernight'");
+        //$hotels = Search::getNearbyHotels($my_lat, $my_lng, "pricepernight");
+        $hotels = Search::getNearbyHotelsArray($my_lat, $my_lng);
         
-        // Requisição de token funcionando
-        //$hotels = $search->hotels()->list();
-
         fwrite(STDERR, print_r($hotels));
         
     }
