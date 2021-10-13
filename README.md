@@ -15,7 +15,7 @@
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="React Native is released under the MIT license." />
   </a>
   <a href="https://github.com/randler/buzzvel-weekend-api/releases">
-    <img src="https://img.shields.io/badge/vers%C3%A3o-2.0.0-green" alt="Versão" />
+    <img src="https://img.shields.io/badge/vers%C3%A3o-2.0.1-green" alt="Versão" />
   </a>
   <a href="https://github.com/randler/buzzvel-weekend-api/releases">
     <img src="https://img.shields.io/packagist/dt/randler/weekbuzz-php.svg" alt="Downloads" />
